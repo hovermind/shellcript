@@ -1,3 +1,21 @@
+typeofvar () {
+
+    local type_signature=$(declare -p "$1" 2>/dev/null)
+
+    if [[ "$type_signature" =~ "declare --" ]]; then
+        printf "string"
+    elif [[ "$type_signature" =~ "declare -a" ]]; then
+        printf "array"
+    elif [[ "$type_signature" =~ "declare -A" ]]; then
+        printf "map"
+    else
+        printf "none"
+    fi
+
+}
+
+
+
 # In Linux (Shell), there are two types of variable:
 # 1. System variables - Created and maintained by Linux itself. This type of variable defined in CAPITAL LETTERS.
 # 2. User defined variables (UDV) - Created and maintained by user. This type of variable defined in lower letters.
