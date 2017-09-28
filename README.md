@@ -300,6 +300,114 @@ function-name( )
 # & => new process (also commamnd terminator)
 
 
+#!/bin/sh
+
+# config
+IS_STDOUT_INABLED=1
+
+# constants
+THIS_DIR=$(pwd)
+COPY_DIR="/home/image/copy_destination"
+BACKUP_DIR="/home/image/backup_vault"
+FIND_PARAM_TEXT_FILE_DIR="/home/image/test_sandeep/category"
+
+loop_and_copy(){
+
+	# arguments
+	local find_pattern=$1
+	
+	# finding all files in the folder
+	local FILES=($(find $find_pattern -type f))
+	
+	# previous command failure
+	if [ $? -ne 0 ]; then
+	
+		if [ $IS_STDOUT_INABLED -eq 1 ]; then
+			printf "\n============ command failed for  (find $DIR_TO_LOOP -type f)\n" 
+		fi
+
+		return 0
+	fi
+	
+	# empty check
+	if [ ${#FILES[@]} -le 0 ]; then
+	
+		if [ $IS_STDOUT_INABLED -eq 1 ]; then
+			printf "\n============ emtpty folder ($DIR_TO_LOOP)\n" 
+		fi
+
+		return 0
+	fi
+	
+	if [ $IS_STDOUT_INABLED -eq 1 ]; then
+		printf "\n============ $DIR_TO_LOOP\n\n"
+		printf "  ${#FILES[@]} files coppied :\n\n"
+	fi
+	
+	# loop files
+	for fileToCopy in "${FILES[@]}"; do
+	
+		# copy command
+		cp $fileToCopy $COPY_DIR
+		
+		if [ $IS_STDOUT_INABLED -eq 1 ]; then
+			echo "    - $(basename "$fileToCopy")"
+		fi
+		
+	done
+
+}
+
+zip_dir(){
+
+	# argument
+	local DIR_TO_ZIP=$1
+	
+	# date time
+	local DATE_TIME=$(date +%Y%m%d-%H%M%S)
+	
+	# zip file name
+	local ZIP_NAME_WITH_PATH="$BACKUP_DIR/backup_$DATE_TIME.zip"
+	
+	zip -r "$ZIP_NAME_WITH_PATH" "$DIR_TO_ZIP" 1>/dev/null 2>/dev/null
+	
+	if [ $IS_STDOUT_INABLED -eq 1 ]; then
+		if [ $? -eq 0 ]; then
+			printf "\n============ zipped successfully : $ZIP_NAME_WITH_PATH\n\n"
+		else
+			echo "\n============ failed to zip : $ZIP_NAME_WITH_PATH\n"
+		fi
+	fi
+}
+
+# get text files only
+text_files=($(find $FIND_PARAM_TEXT_FILE_DIR -type f -name *.txt))
+
+# loop text files
+for tf in "${text_files[@]}"; do
+
+	# read txt files
+	text_lines=($(<"$tf"))
+	
+	for line in "${text_lines[@]}"; do
+
+		# remove \r & \n from line
+		line_no_rn=$(echo $line | tr -d '\r\n')
+		
+		# call function to copy
+		loop_and_copy "$line_no_rn"
+
+	done
+done
+
+# now zip
+zip_dir $COPY_DIR
+
+
+
+
+
+
 
 
 
