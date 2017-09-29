@@ -331,6 +331,23 @@ while IFS= read -r line; do
 done <"$tf"
 
 
+# substring
+"$string" | sed -r 's/[xyz]+/_/g'
+
+You might find this link helpful:
+
+http://tldp.org/LDP/abs/html/string-manipulation.html
+
+In general,
+
+To replace the first match of $substring with $replacement:
+
+${string/substring/replacement}
+To replace all matches of $substring with $replacement:
+
+${string//substring/replacement}
+EDIT: Note that this applies to a variable named $string.
+
 
 
 
@@ -338,29 +355,50 @@ done <"$tf"
 
 #!/bin/sh
 
-# config
-IS_STDOUT_INABLED=1
+# message print in stdout
+IS_STDOUT_INABLED=0
 
 # constants
 THIS_DIR=$(pwd)
-COPY_DIR=""
-BACKUP_DIR=""
-FIND_PARAM_TEXT_FILE_DIR=""
+
+# input date
+USER_INPUT_DATE=$1
+if [ -z "$USER_INPUT_DATE" ]; then
+	USER_INPUT_DATE=$(date +%y%m%d)
+fi
+#echo "$USER_INPUT_DATE"
+
+#copy folder
+COPY_DIR="$THIS_DIR/tmp_copy"
+if [[ ! -d "$COPY_DIR" ]]; then
+	#printf "\ncreating copy folder..........\n\n"
+	$(mkdir "$COPY_DIR" 2>/dev/null)
+fi
+
+# backup folder
+BACKUP_DIR="$THIS_DIR/tmp"
+if [[ ! -d "$BACKUP_DIR" ]]; then
+	#printf "\ncreating backup folder..........\n\n"
+	$(mkdir "$BACKUP_DIR" 2>/dev/null)
+fi
+
+# txt files directory
+FIND_STRING_CONFIG_DIR="$THIS_DIR/find_string_config"
+
 
 loop_and_copy(){
 
 	# arguments
-	local find_pattern=$1
-	local text_file=$2
+	local find_str=$1
 	
 	# finding all files in the folder
-	local FILES=($(find $find_pattern -type f))
+	local FILES=($(find $find_str -type f))
 	
 	# previous command failure
 	if [ $? -ne 0 ]; then
 	
 		if [ $IS_STDOUT_INABLED -eq 1 ]; then
-			printf "\n============ command failed for  (find $find_pattern -type f)\n" 
+			printf "\n============ command failed for  (find $find_str -type f)\n" 
 		fi
 
 		return 0
@@ -370,14 +408,14 @@ loop_and_copy(){
 	if [ ${#FILES[@]} -le 0 ]; then
 	
 		if [ $IS_STDOUT_INABLED -eq 1 ]; then
-			printf "\n============ emtpty folder ($find_pattern)\n" 
+			printf "\n============ emtpty folder ($find_str)\n" 
 		fi
 
 		return 0
 	fi
 	
 	if [ $IS_STDOUT_INABLED -eq 1 ]; then
-		printf "\n============ $(basename "$text_file") ==> $find_pattern\n\n"
+		printf "\n============ $find_str\n\n"
 	fi
 	
 	# loop files
@@ -391,11 +429,44 @@ loop_and_copy(){
 		fi
 		
 	done
-
-	if [ $IS_STDOUT_INABLED -eq 1 ]; then
-		printf "\n\n  ${#FILES[@]} files coppied :\n\n"
-	fi
 }
+
+
+process_line_and_copy(){
+
+	local line=$1
+	
+	#${filename:offset:length}
+	local day=${USER_INPUT_DATE:4:2}
+	local md=${USER_INPUT_DATE:2:4}
+	
+	local find_str=""
+
+	if [[ "$line" =~ ^(.*\/sa\*)$ ]]; then
+		
+		# /var/log/sa/sa* => /var/log/sa/sa*29
+		find_str="${line/\*/*$day}"
+		
+		if [ $IS_STDOUT_INABLED -eq 1 ]; then
+			printf "\n\n============ $line ==>> $find_str"
+		fi
+
+	elif [[ "$line" =~ ^(.*\.\*\.log\.\*)$ ]]; then
+	
+		# /home/image/syst_tools/log/SysTool_Netstat.*.log.* => /home/image/syst_tools/log/SysTool_Netstat.*0929.log.*
+		find_str="${line/.*.log.*/.$md.log*}"
+
+		if [ $IS_STDOUT_INABLED -eq 1 ]; then
+			printf "\n\n============ $line ==>> $find_str"
+		fi
+
+	else
+		find_str="$line"
+	fi
+	
+	loop_and_copy "$find_str"
+}
+
 
 zip_dir(){
 
@@ -412,15 +483,15 @@ zip_dir(){
 	
 	if [ $IS_STDOUT_INABLED -eq 1 ]; then
 		if [ $? -eq 0 ]; then
-			printf "\n\n============ zipped successfully : $ZIP_NAME_WITH_PATH\n\n"
+			printf "\n\n zipped successfully : $ZIP_NAME_WITH_PATH\n\n"
 		else
-			echo "\n\n============ failed to zip : $ZIP_NAME_WITH_PATH\n\n"
+			echo "\n\n failed to zip : $ZIP_NAME_WITH_PATH\n\n"
 		fi
 	fi
 }
 
-# get text files only - text files contain search pattern i.e "/home/emc/ivr/log/*"
-text_files=($(find $FIND_PARAM_TEXT_FILE_DIR -type f -name *.txt))
+# get text files only - text files contain search string i.e "/home/emc/ivr/log/*"
+text_files=($(find $FIND_STRING_CONFIG_DIR -type f -name *.txt))
 
 # loop text files
 for tf in "${text_files[@]}"; do
@@ -433,8 +504,8 @@ for tf in "${text_files[@]}"; do
 			# remove \n \r \t ' '
 			line_no_nrt="${line//[$'\t\r\n ']}"
 			
-			# call function to copy
-			loop_and_copy "$line_no_nrt" "$tf"
+			# function will process & will call loop_and_copy
+			process_line_and_copy "$line_no_nrt"
 		fi
 
 	done <"$tf"
@@ -442,7 +513,27 @@ for tf in "${text_files[@]}"; do
 done
 
 # now zip it 
-zip_dir $COPY_DIR &
+if [ $IS_STDOUT_INABLED -eq 1 ]; then
+	printf "\n\n copying completed ............................................\n"
+	printf "\n\n zipping ......................................................\n\n"
+fi
+# zip command
+zip_dir $COPY_DIR
+
+#remove copy folder
+if [ -d "$COPY_DIR" ]; then
+	if [ $IS_STDOUT_INABLED -eq 1 ]; then
+		printf "\n\n removing tmp copy folder .....................................\n\n"
+	fi
+	
+	# remove tmp copy folder
+	$(rm -rf "$COPY_DIR")
+	
+	if [ $IS_STDOUT_INABLED -eq 1 ]; then
+		printf "\n\n all done .....................................................\n\n\n"
+	fi
+fi
+
 
 
 
