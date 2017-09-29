@@ -343,9 +343,9 @@ IS_STDOUT_INABLED=1
 
 # constants
 THIS_DIR=$(pwd)
-COPY_DIR="/home/image/copy_destination"
-BACKUP_DIR="/home/image/backup_vault"
-FIND_PARAM_TEXT_FILE_DIR="/home/image/test_sandeep/category"
+COPY_DIR=""
+BACKUP_DIR=""
+FIND_PARAM_TEXT_FILE_DIR=""
 
 loop_and_copy(){
 
