@@ -300,6 +300,42 @@ function-name( )
 # & => new process (also commamnd terminator)
 
 
+#string empty check
+line=""
+if [ ! -z "$line" ]; then
+
+	# will check for empty and null
+fi
+
+#removing nrt from string
+# remove \n \r \t ' '
+line_no_nrt="${line//[$'\t\r\n ']}"
+
+
+#reading file
+
+tf="foo/bar/baz.txt"
+
+# read text file
+while IFS= read -r line; do
+
+	if [ ! -z "$line" ]; then
+	
+		# remove \n \r \t ' '
+		line_no_nrt="${line//[$'\t\r\n ']}"
+		
+		# call function to copy
+		loop_and_copy "$line_no_nrt" "$tf"
+	fi
+
+done <"$tf"
+
+
+
+
+
+
+
 #!/bin/sh
 
 # config
@@ -315,6 +351,7 @@ loop_and_copy(){
 
 	# arguments
 	local find_pattern=$1
+	local text_file=$2
 	
 	# finding all files in the folder
 	local FILES=($(find $find_pattern -type f))
@@ -323,7 +360,7 @@ loop_and_copy(){
 	if [ $? -ne 0 ]; then
 	
 		if [ $IS_STDOUT_INABLED -eq 1 ]; then
-			printf "\n============ command failed for  (find $DIR_TO_LOOP -type f)\n" 
+			printf "\n============ command failed for  (find $find_pattern -type f)\n" 
 		fi
 
 		return 0
@@ -333,15 +370,14 @@ loop_and_copy(){
 	if [ ${#FILES[@]} -le 0 ]; then
 	
 		if [ $IS_STDOUT_INABLED -eq 1 ]; then
-			printf "\n============ emtpty folder ($DIR_TO_LOOP)\n" 
+			printf "\n============ emtpty folder ($find_pattern)\n" 
 		fi
 
 		return 0
 	fi
 	
 	if [ $IS_STDOUT_INABLED -eq 1 ]; then
-		printf "\n============ $DIR_TO_LOOP\n\n"
-		printf "  ${#FILES[@]} files coppied :\n\n"
+		printf "\n============ $(basename "$text_file") ==> $find_pattern\n\n"
 	fi
 	
 	# loop files
@@ -356,6 +392,9 @@ loop_and_copy(){
 		
 	done
 
+	if [ $IS_STDOUT_INABLED -eq 1 ]; then
+		printf "\n\n  ${#FILES[@]} files coppied :\n\n"
+	fi
 }
 
 zip_dir(){
@@ -373,35 +412,41 @@ zip_dir(){
 	
 	if [ $IS_STDOUT_INABLED -eq 1 ]; then
 		if [ $? -eq 0 ]; then
-			printf "\n============ zipped successfully : $ZIP_NAME_WITH_PATH\n\n"
+			printf "\n\n============ zipped successfully : $ZIP_NAME_WITH_PATH\n\n"
 		else
-			echo "\n============ failed to zip : $ZIP_NAME_WITH_PATH\n"
+			echo "\n\n============ failed to zip : $ZIP_NAME_WITH_PATH\n\n"
 		fi
 	fi
 }
 
-# get text files only
+# get text files only - text files contain search pattern i.e "/home/emc/ivr/log/*"
 text_files=($(find $FIND_PARAM_TEXT_FILE_DIR -type f -name *.txt))
 
 # loop text files
 for tf in "${text_files[@]}"; do
 
-	# read txt files
-	text_lines=($(<"$tf"))
+	# read text file
+	while IFS= read -r line; do
 	
-	for line in "${text_lines[@]}"; do
-
-		# remove \r & \n from line
-		line_no_rn=$(echo $line | tr -d '\r\n')
+		if [ ! -z "$line" ]; then
 		
-		# call function to copy
-		loop_and_copy "$line_no_rn"
+			# remove \n \r \t ' '
+			line_no_nrt="${line//[$'\t\r\n ']}"
+			
+			# call function to copy
+			loop_and_copy "$line_no_nrt" "$tf"
+		fi
 
-	done
+	done <"$tf"
+	
 done
 
-# now zip
-zip_dir $COPY_DIR
+# now zip it 
+zip_dir $COPY_DIR &
+
+
+
+
 
 
 
