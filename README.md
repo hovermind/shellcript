@@ -90,6 +90,14 @@ echo "message: ${msg}"
 |zero|command is successful|
 |nonzero|command is not successful or some sort of error executing command/shell script|
 
+## Read
+
+*To get input (data from user) from keyboard and store to variable.*
+```
+read name
+```
+
+
 
 
 
