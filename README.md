@@ -31,6 +31,16 @@ Is same as:
 cp /home/tmp/*.log /home/vault
 ```
 
+# Echo
+Displays text or variables value on screen.
 
+`echo [options] [string, variables...]`
+
+**Options**
+
+| Flag | Meaning |
+|------|---------|
+| -n | Do not output the trailing new line |
+| -e | Enable interpretation of the following backslash escaped characters in the strings<br><br>\\a alert (bell)<br>\\b backspace<br>\\c suppress trailing new line<br>\\n new line<br>\\r carriage return<br>\\t horizontal tab<br>\\\\ backslash |
 
 
