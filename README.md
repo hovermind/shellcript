@@ -19,4 +19,18 @@ To see [all environment variables](https://www.cyberciti.biz/faq/linux-list-all-
 scriptNameWithPath=$0
 scriptNameWithoutPath=`basename $scriptNameWithPath`   // backtick not single qoute
 ```
+**N.B :** whatever inside backtick is treated as command and will be executed
+
+## Parameter substitution
+When \`[a command]\` is used with other command, it's called parameter substitution. For example, we want to copy files from "/home/tmp" to current directory "/home/vault". The \`pwd\` prints current directory which is "/home/vault". So,
+```
+cp /home/tmp/*.log `pwd`
+```
+Is same as:
+```
+cp /home/tmp/*.log /home/vault
+```
+
+
+
 
