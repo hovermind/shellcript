@@ -1,6 +1,6 @@
 ## Variable
 
- **In Linux (Shell), there are two types of variable:**
+ ***In Linux (Shell), there are two types of variable:***
  1. System variables - Created and maintained by Linux itself. This type of variable defined in CAPITAL LETTERS.
  2. User defined variables (UDV) - Created and maintained by user. This type of variable defined in lower letters.
 
@@ -24,7 +24,7 @@ scriptNameWithoutPath=`basename $scriptNameWithPath`   // backtick not single qo
 
 ## Parameter substitution
 
-When \`[a command]\` is used with other command, it's called parameter substitution. For example, we want to copy files from "/home/tmp" to current directory "/home/vault". The \`pwd\` prints current directory which is "/home/vault". So,
+*When \`[a command]\` is used with other command, it's called parameter substitution. For example, we want to copy files from "/home/tmp" to current directory "/home/vault". The \`pwd\` prints current directory which is "/home/vault". So,*
 ```
 cp /home/tmp/*.log `pwd`
 ```
@@ -35,7 +35,7 @@ cp /home/tmp/*.log /home/vault
 
 ## Echo
 
-Displays text or variables value on screen.
+*Displays text or variables value on screen*
 
 `echo [options] [string, variables...]`
 
@@ -56,7 +56,7 @@ expr 10 \* 3
 ```
 **Note:**
  - `expr 20 % 3`  => Remainder read as 20 mod 3 and remainder is 2
- - `expr 10 \* 3` => Multiplication use \\* and not * since its wild card.
+ - `expr 10 \* 3` => Multiplication use \\* and not '*' since its wild card.
 
 ```
 result=`expr 6 + 3` // backtick not single qoute
@@ -81,7 +81,14 @@ msg="Hello Hooman"
 echo "message: ${msg}"
 ```
 
+## Exit Status
 
+*Whether command or shell script executed successfully or not*
+
+|exit code|meaning|
+|---------|-------|
+|zero|command is successful|
+|nonzero|command is not successful or some sort of error executing command/shell script|
 
 
 
