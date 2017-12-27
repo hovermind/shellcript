@@ -4,7 +4,7 @@
   - System variables - Created and maintained by Linux itself. This type of variable defined in CAPITAL LETTERS.
   - User defined variables (UDV) - Created and maintained by user. This type of variable defined in lower letters.
 
-*Syntax*
+*Syntax : *
 ```
 thisScriptName="demo.sh"
 echo $thisScriptName
